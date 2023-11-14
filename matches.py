@@ -1,93 +1,11 @@
-import pandas as pd
 from colours import colours
+from functions.colour_range import colour_range
+from functions.get_goal_colour import get_goal_colour
+from functions.get_match_dragon import get_match_dragon
+from functions.prepare_dragons import prepare_dragons
+from functions.range_compatible import range_compatible
+from functions.test_for_relation import test_for_relation
 
-def get_goal_colour(position):
-    colour_found = False
-
-    while not colour_found:
-        colour_name = input(f"What is your goal {position} colour? ").lower()
-
-        if colour_name in colours.keys():
-            return colour_name
-        else:
-            print("Colour not found. Try again")
-
-def get_match_dragon(dragons):
-    match_dragon_found = False
-
-    while not match_dragon_found:
-        input_id = int(input("What is the ID of the dragon you would like to match? "))
-
-        if dragons[dragons["id"] == input_id].empty:
-            print("Dragon not found. Try again")
-        else:
-            # get info of dragon to match
-            return dragons[dragons["id"] == input_id].reset_index(drop=True).loc[0]
-
-def number_direction(number):
-    if number == 0:
-        return 0
-    if number < 0:
-        return -1
-    return 1
-
-def range_compatible(colour_diff_1, colour_diff_2):
-    overall_direction = number_direction(colour_diff_1) + number_direction(colour_diff_2)
-    if overall_direction == -2 or overall_direction == 2:
-        return False
-    if abs(colour_diff_1 - colour_diff_2) > 88:
-        return False
-    return True
-
-def test_for_relation(match_family_tree, partner_family_tree):
-    for char in match_family_tree:
-        for character in partner_family_tree:
-            if char == character:
-                return True
-    return False
-
-def get_colour_number(colour):
-    return colours[colour.lower()]
-
-def colour_range(colour_1, colour_2):
-    no_loop = abs(colour_1 - colour_2)
-    if no_loop > 88:
-        return 176 - no_loop + 2
-    return no_loop + 1
-
-def get_colour_diff(colour, goal_colour):
-    difference = colour - goal_colour
-    if difference >= 0:
-        if difference < 89:
-            return difference
-        return difference - 177
-    if difference > -89:
-        return difference
-    return difference + 177
-
-def add_colour_diffs(dragons, pri, sec, tert):
-    # get diff between each colour and goal
-    dragons["pri_diff"] = dragons.apply(lambda row: get_colour_diff(row["pri_num"], pri), axis = 1)
-    dragons["sec_diff"] = dragons.apply(lambda row: get_colour_diff(row["sec_num"], sec), axis = 1)
-    dragons["tert_diff"] = dragons.apply(lambda row: get_colour_diff(row["tert_num"], tert), axis = 1)
-
-    return dragons
-
-def parse_dragon_colours(dragons):
-    # get primary number
-    dragons["pri_num"] = dragons.apply(lambda row: get_colour_number(row["pri"]), axis = 1)
-    # get secondary number
-    dragons["sec_num"] = dragons.apply(lambda row: get_colour_number(row["sec"]), axis = 1)
-    # get tertiary number
-    dragons["tert_num"] = dragons.apply(lambda row: get_colour_number(row["tert"]), axis = 1)
-    return dragons
-
-def prepare_dragons(pri, sec, tert):
-    dragons = pd.read_csv("dragons.csv", header=0, skipinitialspace=True)
-    dragons = dragons.fillna("")
-    dragons = parse_dragon_colours(dragons)
-    dragons = add_colour_diffs(dragons, pri, sec, tert)
-    return dragons
 
 def get_matches(dragons, match_dragon):
     # compare pri values
